@@ -420,6 +420,10 @@ async def query_object_properties(project_id: str, version_id: str, property_pat
         import traceback
         return f"Error querying object properties: {str(e)}\n{traceback.format_exc()}"
 
-if __name__ == "__main__":
+def main():
+    """Main entry point for the Speckle MCP server."""
     # Initialize and run the server
     mcp.run(transport='stdio')
+
+if __name__ == "__main__":
+    main()
