@@ -153,25 +153,22 @@ async def search_projects(query: str) -> str:
     try:
         client = get_speckle_client()
         
-        # Get all projects first (API doesn't support direct search)
-        projects_collection = client.active_user.get_projects()
+        # Use the built-in search_projects functionality of SpeckleClient
+        # which is more efficient than retrieving all projects and filtering manually
+        from specklepy.core.api.inputs.user_inputs import UserProjectsFilter
+        
+        # Create a filter with the search term
+        filter = UserProjectsFilter(search=query)
+        
+        # Get projects using the filter
+        projects_collection = client.active_user.get_projects(filter=filter)
         
         if not projects_collection or not projects_collection.items:
-            return "No projects found for the configured Speckle account."
-        
-        # Filter projects manually
-        matching_projects = []
-        for project in projects_collection.items:
-            if (query.lower() in project.name.lower() or 
-                (project.description and query.lower() in project.description.lower())):
-                matching_projects.append(project)
-        
-        if not matching_projects:
             return f"No projects found matching the search term: '{query}'"
         
         # Format project information
         project_list = []
-        for project in matching_projects:
+        for project in projects_collection.items:
             project_info = f"ID: {project.id}\nName: {project.name}"
             if project.description:
                 project_info += f"\nDescription: {project.description}"
