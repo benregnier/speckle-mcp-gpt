@@ -1,13 +1,54 @@
-from typing import Any, List, Dict, Optional
-import os
-from mcp.server.fastmcp import FastMCP
+#!/usr/bin/env python3
+"""
+Speckle MCP Server
 
-# Import Speckle modules
-from specklepy.api.client import SpeckleClient
-from specklepy.api import operations
-from specklepy.transports.server import ServerTransport
+This module provides a Model Context Protocol (MCP) server for interacting with Speckle,
+the collaborative data hub that connects with your AEC tools.
+
+The server exposes a set of tools that allow users to:
+- List and search Speckle projects
+- Retrieve detailed project information
+- Access model versions within projects
+- Retrieve and query objects and their properties from specific versions
+
+This MCP server acts as a bridge between Speckle's API and client applications,
+enabling seamless integration of Speckle's functionality into various workflows.
+
+Environment Variables:
+--------------------
+- SPECKLE_TOKEN: Your Speckle personal access token (required)
+- SPECKLE_SERVER: The Speckle server URL (defaults to https://app.speckle.systems)
+
+Available Tools:
+--------------
+- list_projects: Lists all accessible Speckle projects
+- get_project_details: Retrieves detailed information about a specific project
+- search_projects: Searches for projects by name or description
+- get_model_versions: Lists all versions for a specific model
+- get_version_objects: Retrieves objects from a specific version
+- query_object_properties: Queries specific properties from objects in a version
+
+Implementation Details:
+---------------------
+The server uses a singleton pattern to manage the SpeckleClient instance,
+ensuring efficient connection management and authentication handling.
+"""
+
 import json
+import logging
+import os
+import traceback
+from dataclasses import dataclass
+from datetime import datetime
 from threading import Lock
+from typing import Any, Dict, List, Optional, Union
+
+# Third-party imports
+from mcp.server.fastmcp import FastMCP
+from specklepy.api import operations
+from specklepy.api.client import SpeckleClient
+from specklepy.core.api.inputs.user_inputs import UserProjectsFilter
+from specklepy.transports.server import ServerTransport
 
 # Initialize FastMCP server
 mcp = FastMCP("speckle")
