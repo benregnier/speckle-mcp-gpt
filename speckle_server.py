@@ -300,8 +300,8 @@ async def get_project_details(project_id: str, limit: int = 20) -> str:
         return f"No project found with ID: {project_id}"
     
     # Get project models
-    logger.info(f"Retrieving models for project: {project_id} (limit: {limit})")
-    project_with_models = client.project.get_with_models(project_id, limit=limit)
+    logger.info(f"Retrieving models for project: {project_id} (limit: {limit})")    
+    project_with_models = client.project.get_with_models(project_id, models_limit=limit)
     models_count = project_with_models.models.total_count if project_with_models.models else 0
     
     # Get project team
