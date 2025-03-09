@@ -247,13 +247,17 @@ def get_speckle_client() -> SpeckleClient:
 
 @mcp.tool()
 @handle_exceptions
-async def list_projects() -> str:
-    """List all projects accessible with the configured Speckle token."""
+async def list_projects(limit: int = 20) -> str:
+    """List all projects accessible with the configured Speckle token.
+    
+    Args:
+        limit: Maximum number of projects to retrieve (default: 20)
+    """
     client = get_speckle_client()
     
     # Get the current user's projects
-    logger.info("Retrieving user projects")
-    projects_collection = client.active_user.get_projects()
+    logger.info(f"Retrieving user projects (limit: {limit})")
+    projects_collection = client.active_user.get_projects(limit=limit)
     
     if not projects_collection or not projects_collection.items:
         logger.info("No projects found for the configured Speckle account")
@@ -278,11 +282,12 @@ async def list_projects() -> str:
 
 @mcp.tool()
 @handle_exceptions
-async def get_project_details(project_id: str) -> str:
+async def get_project_details(project_id: str, limit: int = 20) -> str:
     """Get detailed information about a specific Speckle project.
     
     Args:
         project_id: The ID of the Speckle project to retrieve
+        limit: Maximum number of models to retrieve (default: 20)
     """
     client = get_speckle_client()
     
@@ -295,8 +300,8 @@ async def get_project_details(project_id: str) -> str:
         return f"No project found with ID: {project_id}"
     
     # Get project models
-    logger.info(f"Retrieving models for project: {project_id}")
-    project_with_models = client.project.get_with_models(project_id)
+    logger.info(f"Retrieving models for project: {project_id} (limit: {limit})")
+    project_with_models = client.project.get_with_models(project_id, limit=limit)
     models_count = project_with_models.models.total_count if project_with_models.models else 0
     
     # Get project team
@@ -368,18 +373,19 @@ async def search_projects(query: str) -> str:
 
 @mcp.tool()
 @handle_exceptions
-async def get_model_versions(project_id: str, model_id: str) -> str:
+async def get_model_versions(project_id: str, model_id: str, limit: int = 20) -> str:
     """Get all versions for a specific model in a project.
     
     Args:
         project_id: The ID of the Speckle project
         model_id: The ID of the model to retrieve versions for
+        limit: Maximum number of versions to retrieve (default: 20)
     """
     client = get_speckle_client()
     
     # Get versions for the specified model
-    logger.info(f"Retrieving versions for model {model_id} in project {project_id}")
-    versions = client.version.get_versions(model_id, project_id)
+    logger.info(f"Retrieving versions for model {model_id} in project {project_id} (limit: {limit})")
+    versions = client.version.get_versions(model_id, project_id, limit=limit)
     
     if not versions or not versions.items:
         logger.info(f"No versions found for model {model_id} in project {project_id}")
