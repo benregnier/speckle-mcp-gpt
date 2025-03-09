@@ -57,6 +57,87 @@ mcp = FastMCP("speckle")
 speckle_token = os.environ.get("SPECKLE_TOKEN", "")
 speckle_server_url = os.environ.get("SPECKLE_SERVER", "https://app.speckle.systems")
 
+
+class SpeckleObjectConverter:
+    """A utility class for converting Speckle objects to serializable formats.
+    
+    This class provides methods to convert complex Speckle objects into
+    serializable dictionaries, with options to control recursion depth
+    and handle various data types appropriately.
+    """
+    
+    @staticmethod
+    def convert_to_dict(obj: Any, depth: int = 0, max_depth: int = 2, include_children: bool = False) -> Any:
+        """Convert a Speckle object to a dictionary with depth control.
+        
+        Args:
+            obj: The Speckle object to convert
+            depth: Current recursion depth
+            max_depth: Maximum recursion depth
+            include_children: Whether to include all children objects
+            
+        Returns:
+            A serializable representation of the object
+        """
+        if depth > max_depth and include_children is False:
+            # Limit recursion depth if not including all children
+            return {"id": getattr(obj, "id", None), "_type": "reference"}
+        
+        if hasattr(obj, "__dict__"):
+            result = {}
+            # Add basic properties
+            for key, value in obj.__dict__.items():
+                if key.startswith("_"):
+                    continue
+                    
+                if isinstance(value, (str, int, float, bool)) or value is None:
+                    result[key] = value
+                elif isinstance(value, list):
+                    if len(value) > 0:
+                        result[key] = [SpeckleObjectConverter.convert_to_dict(item, depth+1, max_depth, include_children) for item in value[:5]]
+                        if len(value) > 5:
+                            result[key].append({"_note": f"...{len(value)-5} more items"})
+                    else:
+                        result[key] = []
+                elif isinstance(value, dict):
+                    result[key] = {k: SpeckleObjectConverter.convert_to_dict(v, depth+1, max_depth, include_children) for k, v in list(value.items())[:5]}
+                    if len(value) > 5:
+                        result[key]["_note"] = f"...{len(value)-5} more items"
+                else:
+                    result[key] = SpeckleObjectConverter.convert_to_dict(value, depth+1, max_depth, include_children)
+            return result
+        elif isinstance(obj, (str, int, float, bool)) or obj is None:
+            return obj
+        elif isinstance(obj, list):
+            return [SpeckleObjectConverter.convert_to_dict(item, depth+1, max_depth, include_children) for item in obj[:5]]
+        elif isinstance(obj, dict):
+            return {k: SpeckleObjectConverter.convert_to_dict(v, depth+1, max_depth, include_children) for k, v in list(obj.items())[:5]}
+        return str(obj)
+    
+    @staticmethod
+    def convert_value(val: Any) -> Any:
+        """Convert a value to a serializable format.
+        
+        This is a simpler conversion method that doesn't limit recursion depth,
+        suitable for converting specific properties.
+        
+        Args:
+            val: The value to convert
+            
+        Returns:
+            A serializable representation of the value
+        """
+        if hasattr(val, '__dict__'):
+            return {k: SpeckleObjectConverter.convert_value(v) for k, v in val.__dict__.items() if not k.startswith('_')}
+        elif isinstance(val, list):
+            return [SpeckleObjectConverter.convert_value(item) for item in val]
+        elif isinstance(val, dict):
+            return {k: SpeckleObjectConverter.convert_value(v) for k, v in val.items()}
+        elif isinstance(val, (str, int, float, bool)) or val is None:
+            return val
+        else:
+            return str(val)
+
 class SpeckleClientSingleton:
     """Singleton class to manage a single instance of SpeckleClient"""
     _instance = None
@@ -285,45 +366,12 @@ async def get_version_objects(project_id: str, version_id: str, include_children
         # Receive the object
         speckle_object = operations.receive(object_id, transport)
         
-        # Convert the object to a dictionary
-        def convert_to_dict(obj, depth=0, max_depth=2):
-            if depth > max_depth and include_children is False:
-                # Limit recursion depth if not including all children
-                return {"id": getattr(obj, "id", None), "_type": "reference"}
-            
-            if hasattr(obj, "__dict__"):
-                result = {}
-                # Add basic properties
-                for key, value in obj.__dict__.items():
-                    if key.startswith("_"):
-                        continue
-                        
-                    if isinstance(value, (str, int, float, bool)) or value is None:
-                        result[key] = value
-                    elif isinstance(value, list):
-                        if len(value) > 0:
-                            result[key] = [convert_to_dict(item, depth+1, max_depth) for item in value[:5]]
-                            if len(value) > 5:
-                                result[key].append({"_note": f"...{len(value)-5} more items"})
-                        else:
-                            result[key] = []
-                    elif isinstance(value, dict):
-                        result[key] = {k: convert_to_dict(v, depth+1, max_depth) for k, v in list(value.items())[:5]}
-                        if len(value) > 5:
-                            result[key]["_note"] = f"...{len(value)-5} more items"
-                    else:
-                        result[key] = convert_to_dict(value, depth+1, max_depth)
-                return result
-            elif isinstance(obj, (str, int, float, bool)) or obj is None:
-                return obj
-            elif isinstance(obj, list):
-                return [convert_to_dict(item, depth+1, max_depth) for item in obj[:5]]
-            elif isinstance(obj, dict):
-                return {k: convert_to_dict(v, depth+1, max_depth) for k, v in list(obj.items())[:5]}
-            return str(obj)
-        
-        # Convert the Speckle object to a serializable dictionary
-        obj_dict = convert_to_dict(speckle_object)
+        # Convert the Speckle object to a serializable dictionary using the converter
+        obj_dict = SpeckleObjectConverter.convert_to_dict(
+            speckle_object, 
+            max_depth=2, 
+            include_children=include_children
+        )
         
         # Return basic info and structured data
         result = {
@@ -396,22 +444,10 @@ async def query_object_properties(project_id: str, version_id: str, property_pat
             else:
                 return f"Error: Property '{part}' not found at path '{path_so_far}'"
         
-        # Convert the result to a serializable format
-        def convert_value(val):
-            if hasattr(val, '__dict__'):
-                return {k: convert_value(v) for k, v in val.__dict__.items() if not k.startswith('_')}
-            elif isinstance(val, list):
-                return [convert_value(item) for item in val]
-            elif isinstance(val, dict):
-                return {k: convert_value(v) for k, v in val.items()}
-            elif isinstance(val, (str, int, float, bool)) or val is None:
-                return val
-            else:
-                return str(val)
-        
+        # Convert the result to a serializable format using the converter
         result = {
             "property_path": property_path,
-            "value": convert_value(current)
+            "value": SpeckleObjectConverter.convert_value(current)
         }
         
         return json.dumps(result, indent=2)
