@@ -439,17 +439,20 @@ def get_speckle_client() -> SpeckleClient:
 
 @mcp.tool()
 @handle_exceptions
-async def list_projects(limit: int = 20) -> str:
+async def list_projects(limit: int = 20, cursor: str | None = None) -> str:
     """List all projects accessible with the configured Speckle token.
-    
+
     Args:
         limit: Maximum number of projects to retrieve (default: 20)
+        cursor: Pagination cursor returned from a previous call
     """
     client = get_speckle_client()
-    
+
     # Get the current user's projects
-    logger.info(f"Retrieving user projects (limit: {limit})")
-    projects_collection = client.active_user.get_projects(limit=limit)
+    logger.info(
+        f"Retrieving user projects (limit: {limit}, cursor: {cursor})"
+    )
+    projects_collection = client.active_user.get_projects(limit=limit, cursor=cursor)
     
     if not projects_collection or not projects_collection.items:
         logger.info("No projects found for the configured Speckle account")
@@ -482,17 +485,22 @@ async def list_projects(limit: int = 20) -> str:
 
 @mcp.tool()
 @handle_exceptions
-async def get_project_details(project_id: str, limit: int = 20) -> str:
+async def get_project_details(
+    project_id: str, limit: int = 20, cursor: str | None = None
+) -> str:
     """Get detailed information about a specific Speckle project.
     
     Args:
         project_id: The ID of the Speckle project to retrieve
         limit: Maximum number of models to retrieve (default: 20)
+        cursor: Pagination cursor returned from a previous call
     """
     client = get_speckle_client()
     
     # Get the project details
-    logger.info(f"Retrieving details for project: {project_id}")
+    logger.info(
+        f"Retrieving details for project: {project_id} (cursor: {cursor})"
+    )
     project = client.project.get(project_id)
     
     if not project:
@@ -500,8 +508,12 @@ async def get_project_details(project_id: str, limit: int = 20) -> str:
         return f"No project found with ID: {project_id}"
     
     # Get project models
-    logger.info(f"Retrieving models for project: {project_id} (limit: {limit})")    
-    project_with_models = client.project.get_with_models(project_id, models_limit=limit)
+    logger.info(
+        f"Retrieving models for project: {project_id} (limit: {limit}, cursor: {cursor})"
+    )
+    project_with_models = client.project.get_with_models(
+        project_id, models_limit=limit, cursor=cursor
+    )
     models_count = project_with_models.models.total_count if project_with_models.models else 0
     
     # Get project team
@@ -540,22 +552,25 @@ async def get_project_details(project_id: str, limit: int = 20) -> str:
 
 @mcp.tool()
 @handle_exceptions
-async def search_projects(query: str) -> str:
+async def search_projects(query: str, cursor: str | None = None) -> str:
     """Search for Speckle projects by name or description.
     
     Args:
         query: The search term to look for in project names and descriptions
+        cursor: Pagination cursor returned from a previous call
     """
     client = get_speckle_client()
     
     # Use the built-in search_projects functionality of SpeckleClient
-    logger.info(f"Searching for projects with query: '{query}'")
+    logger.info(
+        f"Searching for projects with query: '{query}' (cursor: {cursor})"
+    )
     
     # Create a filter with the search term
     filter = UserProjectsFilter(search=query)
     
     # Get projects using the filter
-    projects_collection = client.active_user.get_projects(filter=filter)
+    projects_collection = client.active_user.get_projects(filter=filter, cursor=cursor)
     
     if not projects_collection or not projects_collection.items:
         logger.info(f"No projects found matching the search term: '{query}'")
@@ -584,19 +599,29 @@ async def search_projects(query: str) -> str:
 
 @mcp.tool()
 @handle_exceptions
-async def get_model_versions(project_id: str, model_id: str, limit: int = 20) -> str:
+async def get_model_versions(
+    project_id: str,
+    model_id: str,
+    limit: int = 20,
+    cursor: str | None = None,
+) -> str:
     """Get all versions for a specific model in a project.
     
     Args:
         project_id: The ID of the Speckle project
         model_id: The ID of the model to retrieve versions for
         limit: Maximum number of versions to retrieve (default: 20)
+        cursor: Pagination cursor returned from a previous call
     """
     client = get_speckle_client()
     
     # Get versions for the specified model
-    logger.info(f"Retrieving versions for model {model_id} in project {project_id} (limit: {limit})")
-    versions = client.version.get_versions(model_id, project_id, limit=limit)
+    logger.info(
+        f"Retrieving versions for model {model_id} in project {project_id} (limit: {limit}, cursor: {cursor})"
+    )
+    versions = client.version.get_versions(
+        model_id, project_id, limit=limit, cursor=cursor
+    )
     
     if not versions or not versions.items:
         logger.info(f"No versions found for model {model_id} in project {project_id}")
@@ -626,18 +651,26 @@ async def get_model_versions(project_id: str, model_id: str, limit: int = 20) ->
 
 @mcp.tool()
 @handle_exceptions
-async def get_version_objects(project_id: str, version_id: str, include_children: bool = False) -> str:
+async def get_version_objects(
+    project_id: str,
+    version_id: str,
+    include_children: bool = False,
+    cursor: str | None = None,
+) -> str:
     """Get objects from a specific version in a project.
     
     Args:
         project_id: The ID of the Speckle project
         version_id: The ID of the version to retrieve objects from
         include_children: Whether to include children objects in the response
+        cursor: Pagination cursor returned from a previous call
     """
     client = get_speckle_client()
     
     # Get the version to access its referenced object ID
-    logger.info(f"Retrieving version {version_id} from project {project_id}")
+    logger.info(
+        f"Retrieving version {version_id} from project {project_id} (cursor: {cursor})"
+    )
     version = client.version.get(version_id, project_id)
     
     if not version:
@@ -653,7 +686,7 @@ async def get_version_objects(project_id: str, version_id: str, include_children
     
     # Receive the object
     logger.info(f"Receiving object {object_id}")
-    speckle_object = operations.receive(object_id, transport)
+    speckle_object = operations.receive(object_id, transport, cursor=cursor)
     
     # Convert the Speckle object to a serializable dictionary using the converter
     logger.info(f"Converting object to dictionary (include_children={include_children})")
