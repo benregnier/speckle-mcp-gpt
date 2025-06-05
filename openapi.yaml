@@ -3,10 +3,11 @@ info:
   title: Speckle MCP Plugin API
   version: "1.0"
 servers:
-  - url: http://localhost:8000
+  - url: https://localhost:8000
 paths:
   /projects:
     get:
+      operationId: listProjects
       summary: List available projects
       parameters:
         - name: limit
@@ -29,6 +30,7 @@ paths:
                 type: string
   /projects/{project_id}:
     get:
+      operationId: getProjectById
       summary: Get details for a project
       parameters:
         - name: project_id
@@ -56,6 +58,7 @@ paths:
                 type: string
   /projects/search:
     get:
+      operationId: searchProjects
       summary: Search projects by name or description
       parameters:
         - name: query
@@ -77,6 +80,7 @@ paths:
                 type: string
   /projects/{project_id}/models/{model_id}/versions:
     get:
+      operationId: getModelVersions
       summary: List versions for a model
       parameters:
         - name: project_id
@@ -109,6 +113,7 @@ paths:
                 type: string
   /projects/{project_id}/versions/{version_id}/objects:
     get:
+      operationId: getVersionObjects
       summary: Retrieve objects for a version
       parameters:
         - name: project_id
@@ -138,8 +143,14 @@ paths:
             application/json:
               schema:
                 type: object
+                properties:
+                  objects:
+                    type: array
+                    items:
+                      type: object
   /projects/{project_id}/versions/{version_id}/query:
     get:
+      operationId: queryVersionObjects
       summary: Query properties from a version
       parameters:
         - name: project_id
@@ -164,3 +175,8 @@ paths:
             application/json:
               schema:
                 type: object
+                properties:
+                  objects:
+                    type: array
+                    items:
+                      type: object
