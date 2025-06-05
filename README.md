@@ -118,6 +118,15 @@ Replace `/path/to/speckle-mcp` with the actual path to the directory containing 
     - `version_id`: The ID of the version to retrieve objects from
     - `property_path`: The dot-notation path to the property (e.g., "elements.0.name")
 
+## HTTP Wrapper & ChatGPT Plugin
+
+To expose the MCP functions over HTTP run:
+```bash
+uvicorn http_wrapper:app --reload
+```
+
+The server hosts `openapi.yaml` at `/openapi.yaml` and the plugin manifest at `/.well-known/ai-plugin.json`. Make these files reachable by ChatGPT using a public URL.
+
 ## Troubleshooting
 
 - If you encounter authentication issues, make sure your Speckle token is valid and has the necessary permissions
