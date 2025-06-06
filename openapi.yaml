@@ -3,7 +3,7 @@ info:
   title: Speckle MCP Plugin API
   version: "1.0"
 servers:
-  - url: https://localhost:8000
+  - url: https://speckle.mcp-srvr.xyz
 paths:
   /projects:
     get:
