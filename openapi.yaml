@@ -181,7 +181,7 @@ paths:
               schema:
                 type: object
                 properties:
-                  objects:
-                    type: array
-                    items:
-                      type: object
+                  property_path:
+                    type: string
+                  value:
+                    type: string
