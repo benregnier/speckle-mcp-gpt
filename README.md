@@ -92,7 +92,6 @@ Replace `/path/to/speckle-mcp` with the actual path to the directory containing 
   - Parameters:
     - `project_id`: The ID of the Speckle project to retrieve
     - `limit` (optional): Maximum number of models to retrieve (default: 20)
-    - `cursor` (optional): Pagination cursor returned from a previous request
 
 - `search_projects`: Searches for projects by name or description
   - Parameters:

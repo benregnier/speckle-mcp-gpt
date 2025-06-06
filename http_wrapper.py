@@ -30,10 +30,9 @@ async def http_list_projects(limit: int = 20, cursor: str | None = None):
     return maybe_json(result)
 
 @app.get("/projects/{project_id}")
-async def http_get_project_details(
-    project_id: str, limit: int = 20, cursor: str | None = None
-):
-    result = await server.get_project_details(project_id, limit, cursor)
+async def http_get_project_details(project_id: str, limit: int = 20):
+    """HTTP endpoint to retrieve detailed information for a project."""
+    result = await server.get_project_details(project_id, limit)
     return maybe_json(result)
 
 @app.get("/projects/search")
