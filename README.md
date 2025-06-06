@@ -86,7 +86,6 @@ Replace `/path/to/speckle-mcp` with the actual path to the directory containing 
 - `list_projects`: Lists all accessible Speckle projects
   - Parameters:
     - `limit` (optional): Maximum number of projects to retrieve (default: 20)
-    - `cursor` (optional): Pagination cursor returned from a previous request
 
 - `get_project_details`: Retrieves detailed information about a specific project
   - Parameters:
@@ -96,7 +95,6 @@ Replace `/path/to/speckle-mcp` with the actual path to the directory containing 
 - `search_projects`: Searches for projects by name or description
   - Parameters:
     - `query`: The search term to look for in project names and descriptions
-    - `cursor` (optional): Pagination cursor returned from a previous request
 
 ### Models
 
@@ -105,7 +103,6 @@ Replace `/path/to/speckle-mcp` with the actual path to the directory containing 
     - `project_id`: The ID of the Speckle project
     - `model_id`: The ID of the model to retrieve versions for
     - `limit` (optional): Maximum number of versions to retrieve (default: 20)
-    - `cursor` (optional): Pagination cursor returned from a previous request
 
 ### Objects
 
@@ -114,22 +111,12 @@ Replace `/path/to/speckle-mcp` with the actual path to the directory containing 
     - `project_id`: The ID of the Speckle project
     - `version_id`: The ID of the version to retrieve objects from
     - `include_children` (optional): Whether to include children objects in the response (default: false)
-    - `cursor` (optional): Pagination cursor returned from a previous request
 
 - `query_object_properties`: Queries specific properties from objects in a version
   - Parameters:
     - `project_id`: The ID of the Speckle project
     - `version_id`: The ID of the version to retrieve objects from
     - `property_path`: The dot-notation path to the property (e.g., "elements.0.name")
-
-### Pagination Example
-
-Use the `cursor` parameter to request additional pages from the HTTP wrapper:
-
-```bash
-curl "http://localhost:8000/projects?limit=5"        # first page
-curl "http://localhost:8000/projects?limit=5&cursor=<cursor_token>"  # next page
-```
 
 ## HTTP Wrapper & ChatGPT Plugin
 
