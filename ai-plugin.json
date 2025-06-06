@@ -9,10 +9,10 @@
   },
   "api": {
     "type": "openapi",
-    "url": "https://speckle.mcp.srvr.xyz/openapi.yaml",
+    "url": "https://speckle.mcp-srvr.xyz/openapi.yaml",
     "is_user_authenticated": false
   },
-  "logo_url": "https://speckle.mcp.srvr.xyz/logo.png",
+  "logo_url": "https://speckle.mcp-srvr.xyz/logo.png",
   "contact_email": "support@example.com",
-  "legal_info_url": "https://speckle.mcp.srvr.xyz/legal"
+  "legal_info_url": "https://speckle.mcp-srvr.xyz/legal"
 }
