@@ -56,11 +56,6 @@ paths:
           required: true
           schema:
             type: string
-        - name: cursor
-          in: query
-          schema:
-            type: string
-          required: false
       responses:
         '200':
           description: Search results
@@ -89,11 +84,6 @@ paths:
             type: integer
             default: 20
           required: false
-        - name: cursor
-          in: query
-          schema:
-            type: string
-          required: false
       responses:
         '200':
           description: Versions list
@@ -120,11 +110,6 @@ paths:
           in: query
           schema:
             type: boolean
-          required: false
-        - name: cursor
-          in: query
-          schema:
-            type: string
           required: false
       responses:
         '200':
