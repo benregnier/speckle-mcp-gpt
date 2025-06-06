@@ -144,10 +144,15 @@ paths:
               schema:
                 type: object
                 properties:
-                  objects:
-                    type: array
-                    items:
-                      type: object
+                  version_id:
+                    type: string
+                  object_id:
+                    type: string
+                  created_at:
+                    type: string
+                    format: date-time
+                  data:
+                    type: object
   /projects/{project_id}/versions/{version_id}/query:
     get:
       operationId: queryVersionObjects
