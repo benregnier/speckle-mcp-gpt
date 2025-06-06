@@ -486,21 +486,18 @@ async def list_projects(limit: int = 20, cursor: str | None = None) -> str:
 @mcp.tool()
 @handle_exceptions
 async def get_project_details(
-    project_id: str, limit: int = 20, cursor: str | None = None
+    project_id: str, limit: int = 20
 ) -> str:
     """Get detailed information about a specific Speckle project.
     
     Args:
         project_id: The ID of the Speckle project to retrieve
         limit: Maximum number of models to retrieve (default: 20)
-        cursor: Pagination cursor returned from a previous call
     """
     client = get_speckle_client()
     
     # Get the project details
-    logger.info(
-        f"Retrieving details for project: {project_id} (cursor: {cursor})"
-    )
+    logger.info(f"Retrieving details for project: {project_id}")
     project = client.project.get(project_id)
     
     if not project:
@@ -509,10 +506,10 @@ async def get_project_details(
     
     # Get project models
     logger.info(
-        f"Retrieving models for project: {project_id} (limit: {limit}, cursor: {cursor})"
+        f"Retrieving models for project: {project_id} (limit: {limit})"
     )
     project_with_models = client.project.get_with_models(
-        project_id, models_limit=limit, cursor=cursor
+        project_id, models_limit=limit
     )
     models_count = project_with_models.models.total_count if project_with_models.models else 0
     
